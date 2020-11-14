@@ -12,5 +12,5 @@ router.register(r"hotels", api_views.HotelViewSet)
 router.register(r"trips", api_views.TripViewSet)
 
 urlpatterns = [
-    path("", include(router.urls)),
+    path("api/", include(router.urls)),
 ]
