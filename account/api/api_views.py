@@ -1,9 +1,10 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
-
-from account.api.serializers import RegistrationSerializer
+from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.viewsets import ModelViewSet
+from django.contrib.auth.models import User
+from account.api.serializers import RegistrationSerializer, UserSerializer
 
 
 class RegisterUser(generics.GenericAPIView):
@@ -24,3 +25,10 @@ class RegisterUser(generics.GenericAPIView):
 
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UsersViewSet(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
+    http_method_names = ['get', 'destroy', 'head']

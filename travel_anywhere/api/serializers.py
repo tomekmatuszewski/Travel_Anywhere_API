@@ -5,9 +5,19 @@ from travel_anywhere.models import (Airport, City, Continent, Country, Hotel,
 
 
 class TripSerializer(serializers.ModelSerializer):
+
+    country = serializers.CharField(source="destination_hotel.city.country.name", read_only=True)
+    city = serializers.CharField(source="destination_hotel.city.name", read_only=True)
+    airport_departure = serializers.CharField(source="departure_airport.name", read_only=True)
+    airport_destination = serializers.CharField(source="destination_airport.name", read_only=True)
+    hotel = serializers.CharField(source="destination_hotel.name", read_only=True)
+
     class Meta:
         model = Trip
-        fields = "__all__"
+        fields = ["id", "type", "days_number", "departure_date", "return_date",
+                  "price_adults", "price_kids", "is_promoted",
+                  "places_for_adults", "places_for_kids", "airport_departure",
+                  "airport_destination", "hotel", "city", "country"]
 
 
 class AirportSerializer(serializers.ModelSerializer):
@@ -48,9 +58,3 @@ class CountrySerializer(serializers.ModelSerializer):
         fields = ["id", "name", "continent", "continent_name", "cities"]
 
 
-class ContinentSerializer(serializers.ModelSerializer):
-    countries = CountrySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Continent
-        fields = ["id", "name", "countries"]
