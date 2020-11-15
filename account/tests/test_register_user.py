@@ -16,11 +16,7 @@ class TestRegisterUser:
             },
         )
         assert response.status_code == 201
-        assert response.data == {
-            "response": "User Created Successfully.  Now perform Login to get your token",
-            "username": "test_user",
-            "email": "test@gmail.com",
-        }
+        assert response.data["response"] == "User Created Successfully"
         assert UserProfile.objects.first().user.username == "test_user"
 
     def test_register_user_failed(self, client):
