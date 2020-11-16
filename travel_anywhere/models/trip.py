@@ -22,17 +22,16 @@ class Trip(models.Model):
     places_for_kids = models.PositiveSmallIntegerField()
 
     departure_airport = models.ForeignKey(
-        Airport, models.SET_NULL, blank=True, null=True, related_name="trips_departure"
+        Airport, on_delete=models.SET_NULL, null=True, related_name="trips_departure"
     )
     destination_airport = models.ForeignKey(
         Airport,
-        models.SET_NULL,
-        blank=True,
+        on_delete=models.SET_NULL,
         null=True,
         related_name="trips_destination",
     )
     destination_hotel = models.ForeignKey(
-        Hotel, models.SET_NULL, blank=True, null=True, related_name="trips"
+        Hotel, on_delete=models.SET_NULL, null=True, related_name="trips"
     )
 
     def __str__(self):
