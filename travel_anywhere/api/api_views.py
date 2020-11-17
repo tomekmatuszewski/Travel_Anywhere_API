@@ -46,3 +46,5 @@ class TripViewSet(viewsets.ModelViewSet):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["type", "destination_hotel__name"]
 
+
+
