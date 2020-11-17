@@ -1,26 +1,46 @@
-from rest_framework import viewsets
+
+from rest_framework import viewsets, generics
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
-from travel_anywhere.api.serializers import (AirportSerializer, CitySerializer,
-                                             CountrySerializer,
-                                             HotelSerializer, TripSerializer)
-from travel_anywhere.models import (Airport, City, Country, Hotel,
-                                    Trip)
+from travel_anywhere.api.serializers import (AirportSerializer, HotelSerializer, TripSerializer)
+from travel_anywhere.models import (Airport, Hotel, Trip)
 
 
-class CountryViewSet(viewsets.ModelViewSet):
+class TripViewSet(viewsets.ModelViewSet):
 
-    queryset = Country.objects.all()
-    serializer_class = CountrySerializer
+    queryset = Trip.objects.all()
+    serializer_class = TripSerializer
+    pagination_class = PageNumberPagination
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["name", "continent__name"]
+    search_fields = ["type", "destination_hotel__name", "destination_airport__name"]
 
 
-class CityViewSet(viewsets.ModelViewSet):
+class TripHotelView(generics.GenericAPIView):
 
-    queryset = City.objects.all()
-    serializer_class = CitySerializer
+    serializer_class = HotelSerializer
+
+    def get(self, request, *args, **kwargs):
+        id_ = self.kwargs['pk']
+        queryset = Trip.objects.get(pk=id_).destination_hotel
+        serializer = self.get_serializer(queryset)
+        return Response(serializer.data)
+
+
+class TripAirportView(generics.GenericAPIView):
+
+    serializer_class = AirportSerializer
+
+    def get(self, request, *args, **kwargs):
+        id_ = self.kwargs['pk']
+        queryset = Trip.objects.get(pk=id_)
+        if self.kwargs['slug'] == "airport-dest":
+            queryset = queryset.destination_airport
+        elif self.kwargs['slug'] == "airport-dep":
+            queryset = queryset.departure_airport
+        serializer = self.get_serializer(queryset)
+        return Response(serializer.data)
 
 
 class AirportsViewSet(viewsets.ModelViewSet):
@@ -36,15 +56,3 @@ class HotelViewSet(viewsets.ModelViewSet):
     serializer_class = HotelSerializer
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["name", "standard", "city__name"]
-
-
-class TripViewSet(viewsets.ModelViewSet):
-
-    queryset = Trip.objects.all()
-    serializer_class = TripSerializer
-    pagination_class = PageNumberPagination
-    filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["type", "destination_hotel__name"]
-
-
-

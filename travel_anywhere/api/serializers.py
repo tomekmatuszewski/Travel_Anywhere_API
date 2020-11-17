@@ -9,44 +9,24 @@ class TripSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trip
         fields = "__all__"
-        depth = 3
+        depth = 1
 
 
 class AirportSerializer(serializers.ModelSerializer):
-    trips_departure = TripSerializer(many=True, read_only=True)
-    trips_destination = TripSerializer(many=True, read_only=True)
 
     class Meta:
         model = Airport
-        fields = ["name", "city", "trips_departure", "trips_destination"]
+        fields = ["name", "city"]
+        depth = 3
 
 
 class HotelSerializer(serializers.ModelSerializer):
 
-    trips = TripSerializer(many=True, read_only=True)
-
     class Meta:
         model = Hotel
-        fields = ["name", "standard", "description", "city", "trips"]
+        fields = ["name", "standard", "description", "city"]
+        depth = 3
 
 
-class CitySerializer(serializers.ModelSerializer):
-
-    hotels = HotelSerializer(many=True, read_only=True)
-    airports = AirportSerializer(many=True, read_only=True)
-    country_name = serializers.CharField(source="country.name", read_only=True)
-
-    class Meta:
-        model = City
-        fields = ["name", "country", "country_name", "hotels", "airports"]
-
-
-class CountrySerializer(serializers.ModelSerializer):
-    cities = CitySerializer(many=True, read_only=True)
-    continent_name = serializers.CharField(source="continent.name", read_only=True)
-
-    class Meta:
-        model = Country
-        fields = ["id", "name", "continent", "continent_name", "cities"]
 
 
