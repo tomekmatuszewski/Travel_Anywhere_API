@@ -1,9 +1,10 @@
+from django.contrib.auth.models import User
 from rest_framework import generics, status
-from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from django.contrib.auth.models import User
+
 from account.api.serializers import RegistrationSerializer, UserSerializer
 
 
@@ -16,9 +17,7 @@ class RegisterUser(generics.GenericAPIView):
         data = {}
         if serializer.is_valid():
             user = serializer.save()
-            data[
-                "response"
-            ] = "User Created Successfully"
+            data["response"] = "User Created Successfully"
             data["username"] = user.username
             data["email"] = user.email
             data["token"] = Token.objects.get(user=user).key
@@ -31,4 +30,4 @@ class UsersViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
-    http_method_names = ['get', 'destroy', 'head']
+    http_method_names = ["get", "destroy", "head"]

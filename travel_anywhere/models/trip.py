@@ -36,5 +36,3 @@ class Trip(models.Model):
 
     def __str__(self):
         return f"Trip to {self.destination_hotel.name}"
-
-
