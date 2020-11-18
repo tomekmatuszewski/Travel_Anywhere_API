@@ -3,7 +3,9 @@ from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
 
 from account.api.serializers import RegistrationSerializer, UserSerializer
 
@@ -30,4 +32,37 @@ class UsersViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
-    http_method_names = ["get", "destroy", "head"]
+    http_method_names = ["get", "destroy", "update", "head"]
+
+
+class UserProfileView(GenericAPIView):
+
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        try:
+            return self.request.user
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, *args, **kwargs):
+        user = self.get_queryset()
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
+
+    def put(self, request, *args, **kwargs):
+        user = self.get_queryset()
+        serializer = self.get_serializer(user, data=request.data)
+        data = {}
+        if serializer.is_valid():
+            serializer.save()
+            data['response'] = "Account updated successfully"
+            return Response(data=data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        user = self.get_queryset()
+        user.delete()
+        data = {'response': 'User deleted succesfully'}
+        return Response(data=data)
