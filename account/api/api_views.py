@@ -3,11 +3,13 @@ from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, UpdateAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
-from account.api.serializers import RegistrationSerializer, UserSerializer, LoginSerializer
+from account.api.serializers import RegistrationSerializer, UserSerializer, LoginSerializer, ChangePasswordSerializer
+from account.api.validation import validate_email, validate_username, error_message, \
+    email_lowercase, check_matching_passwords
 
 
 class RegisterUser(generics.GenericAPIView):
@@ -15,7 +17,11 @@ class RegisterUser(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        username = validate_username(request.data.get('username'))
+        email = validate_email(request.data.get('email'))
+        if username or email:
+            return Response(error_message(email=email, username=username))
+        serializer = self.get_serializer(data=email_lowercase(request.data))
         data = {}
         if serializer.is_valid():
             user = serializer.save()
@@ -94,6 +100,32 @@ class ObtainTokenView(GenericAPIView):
         },
             status=status.HTTP_401_UNAUTHORIZED
         )
+
+
+class ChangePasswordView(UpdateAPIView):
+
+    serializer_class = ChangePasswordSerializer
+    model = User
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            if not user.check_password(serializer.data.get("old_password")):
+                return Response({"old_password": "Wrong current password"}, status=status.HTTP_400_BAD_REQUEST)
+            elif check_matching_passwords(serializer.data) is None:
+                return Response({"new_password": "New password must match"})
+            user.set_password(serializer.data.get('new_password'))
+            user.save()
+            return Response({
+                "response": "Successfully changed password"
+            },
+            status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
