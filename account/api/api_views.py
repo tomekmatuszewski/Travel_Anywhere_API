@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
-
-from account.api.serializers import RegistrationSerializer, UserSerializer
+from django.contrib.auth import authenticate
+from account.api.serializers import RegistrationSerializer, UserSerializer, LoginSerializer
 
 
 class RegisterUser(generics.GenericAPIView):
@@ -66,3 +66,53 @@ class UserProfileView(GenericAPIView):
         user.delete()
         data = {'response': 'User deleted succesfully'}
         return Response(data=data)
+
+
+class ObtainTokenView(GenericAPIView):
+
+    permission_classes = [AllowAny]
+    serializer_class = LoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        context = dict()
+        username, password = request.data['username'], request.data['password']
+        user = authenticate(username=username, password=password)
+        if user:
+            try:
+                token = Token.objects.get(user=user)
+            except Token.DoesNotExist:
+                token = Token.objects.create(user=user)
+            context['response'] = "Successfully authenticated"
+            context['id'] = user.id
+            context['username'] = username
+            context['email'] = user.email
+            context['token'] = token.key
+            return Response(data=context)
+        return Response(data={
+            'response': 'Error',
+            'message': 'Invalid credentials',
+        },
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
