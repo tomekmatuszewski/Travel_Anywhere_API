@@ -11,7 +11,7 @@ router.register(r"cities", api_views.CityView)
 router.register(r"countries", api_views.CountryView)
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path("api/", include(router.urls)),
     path(
         "api/trips/<int:pk>/hotel", api_views.TripHotelView.as_view(), name="trip-hotel"
     ),

@@ -1,7 +1,7 @@
-from django.contrib.auth.models import User
 from typing import Union
-from rest_framework.response import Response
-from rest_framework import status
+
+from django.contrib.auth.models import User
+
 
 def validate_email(email: str) -> Union[str, None]:
     try:
@@ -26,8 +26,8 @@ def error_message(email=None, username=None) -> dict:
     elif username:
         wrong_data = "username"
     data = {
-        'error message': f'That {wrong_data} is already in use',
-        'response': 'Error'
+        "error message": f"That {wrong_data} is already in use",
+        "response": "Error",
     }
     return data
 
@@ -45,10 +45,3 @@ def check_matching_passwords(data: dict):
         return None
     else:
         return data
-
-
-
-
-
-
-

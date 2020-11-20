@@ -1,15 +1,17 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAdminUser
-from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView, UpdateAPIView
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import authenticate
-from account.api.serializers import RegistrationSerializer, UserSerializer, LoginSerializer, ChangePasswordSerializer
-from account.api.validation import validate_email, validate_username, error_message, \
-    email_lowercase, check_matching_passwords
+
+from account.api.serializers import (ChangePasswordSerializer, LoginSerializer,
+                                     RegistrationSerializer, UserSerializer)
+from account.api.validation import (check_matching_passwords, email_lowercase,
+                                    error_message, validate_email,
+                                    validate_username)
 
 
 class RegisterUser(generics.GenericAPIView):
@@ -17,8 +19,8 @@ class RegisterUser(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        username = validate_username(request.data.get('username'))
-        email = validate_email(request.data.get('email'))
+        username = validate_username(request.data.get("username"))
+        email = validate_email(request.data.get("email"))
         if username or email:
             return Response(error_message(email=email, username=username))
         serializer = self.get_serializer(data=email_lowercase(request.data))
@@ -63,14 +65,14 @@ class UserProfileView(GenericAPIView):
         data = {}
         if serializer.is_valid():
             serializer.save()
-            data['response'] = "Account updated successfully"
+            data["response"] = "Account updated successfully"
             return Response(data=data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         user = self.get_queryset()
         user.delete()
-        data = {'response': 'User deleted succesfully'}
+        data = {"response": "User deleted succesfully"}
         return Response(data=data)
 
 
@@ -81,24 +83,25 @@ class ObtainTokenView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         context = dict()
-        username, password = request.data['username'], request.data['password']
+        username, password = request.data["username"], request.data["password"]
         user = authenticate(username=username, password=password)
         if user:
             try:
                 token = Token.objects.get(user=user)
             except Token.DoesNotExist:
                 token = Token.objects.create(user=user)
-            context['response'] = "Successfully authenticated"
-            context['id'] = user.id
-            context['username'] = username
-            context['email'] = user.email
-            context['token'] = token.key
+            context["response"] = "Successfully authenticated"
+            context["id"] = user.id
+            context["username"] = username
+            context["email"] = user.email
+            context["token"] = token.key
             return Response(data=context)
-        return Response(data={
-            'response': 'Error',
-            'message': 'Invalid credentials',
-        },
-            status=status.HTTP_401_UNAUTHORIZED
+        return Response(
+            data={
+                "response": "Error",
+                "message": "Invalid credentials",
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
         )
 
 
@@ -116,35 +119,16 @@ class ChangePasswordView(UpdateAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             if not user.check_password(serializer.data.get("old_password")):
-                return Response({"old_password": "Wrong current password"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"old_password": "Wrong current password"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             elif check_matching_passwords(serializer.data) is None:
                 return Response({"new_password": "New password must match"})
-            user.set_password(serializer.data.get('new_password'))
+            user.set_password(serializer.data.get("new_password"))
             user.save()
-            return Response({
-                "response": "Successfully changed password"
-            },
-            status=status.HTTP_202_ACCEPTED)
+            return Response(
+                {"response": "Successfully changed password"},
+                status=status.HTTP_202_ACCEPTED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

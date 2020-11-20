@@ -3,9 +3,10 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from travel_anywhere.api.serializers import (AirportSerializer,
-                                             HotelSerializer, TripSerializer, CitySerializer, CountrySerializer)
-from travel_anywhere.models import Airport, Hotel, Trip, City, Country
+from travel_anywhere.api.serializers import (AirportSerializer, CitySerializer,
+                                             CountrySerializer,
+                                             HotelSerializer, TripSerializer)
+from travel_anywhere.models import Airport, City, Country, Hotel, Trip
 
 
 class TripViewSet(viewsets.ModelViewSet):
@@ -14,7 +15,12 @@ class TripViewSet(viewsets.ModelViewSet):
     serializer_class = TripSerializer
     pagination_class = PageNumberPagination
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["type", "destination_hotel__name", "destination_airport__name", "departure_airport__name"]
+    search_fields = [
+        "type",
+        "destination_hotel__name",
+        "destination_airport__name",
+        "departure_airport__name",
+    ]
 
 
 class TripHotelView(generics.GenericAPIView):
