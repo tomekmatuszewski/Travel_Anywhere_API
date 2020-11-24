@@ -25,7 +25,7 @@ REST API for travel company -> Django + Django Rest Framework
 - get airport / hotel for particular trips
 
     - http://localhost:8000/api/trips/<int:pk>/hotel
-    - http://localhost:8000/api/trips/<int:pk>/airport-dest   (destination airport)
-    - http://localhost:8000/api/trips/<int:pk>/airport-dep     (departure airport)
+    - http://localhost:8000/api/trips/<int:pk>/airport-dest  -> (destination airport)
+    - http://localhost:8000/api/trips/<int:pk>/airport-dep   ->  (departure airport)
 
 
